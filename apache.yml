@@ -1,0 +1,40 @@
+---
+- name: Configuring Basic Apache
+  hosts: localhost
+  become: yes
+  tasks:  
+  - name: Install Httpd Package
+    yum:
+      name: httpd
+      state: present
+  - name: Start Service
+    service:
+      name: httpd
+      state: started
+  - name: Adding Firewall
+    firewalld:
+      service: http
+      permanent: yes
+      state: enabled
+  - name: Web Page
+    blockinfile:
+      path:  /var/www/html/index.html
+      create:  yes
+      block:  |
+        Ansible is awesome
+  - name: Configuration File
+    blockinfile:
+      path:  /etc/httpd/conf.d/rpr.conf
+      create:  yes
+      block:  |
+        <Directory /var/www/html>
+        Require all granted
+        </Directory>
+        <VirtualHost *:80>
+        ServerName server.example.com
+        DocumentRoot /var/www/html
+        </Virtualhost>
+  - name: Restart Service
+    service:
+      name: httpd
+      state: restarted
